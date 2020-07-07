@@ -1,25 +1,62 @@
-import React, { Component, useState } from 'react';
+import React, { Component, useState, useEffect } from 'react';
 import './App.css';
 
 
-class App2 extends Component {
-  state = {
-    count: 1,
+function App2 () {
+
+  const [count, setCount] = useState(0);
+  const [size, setSize] = useState({
+    width: document.documentElement.clientWidth,
+    height: document.documentElement.clientHeight
+  })
+
+  useEffect(() => {
+    document.title = count
+  })
+
+  const onResize = () => {
+    setSize({
+      width: document.documentElement.clientWidth,
+      height: document.documentElement.clientHeight
+    })
   }
 
-  render () {
-    const { count } = this.state;
-    return (
-      <div>
-        <button
-          type='button'
-          onClick={() => { this.setState({ count: count + 1 }) }}
-        >
-          Click({count})
-        </button>
-      </div>
-    )
+  useEffect(() => {
+    window.addEventListener('resize', onResize, false);
+
+    return () => {
+      window.removeEventListener('resize', onResize, false);
+    }
+  }, [])
+
+  const onClick = () => {
+    console.log('onclick');
+
   }
+
+  useEffect(() => {
+    document.getElementById('size').addEventListener('click', onClick, false)
+
+    return ()=>{
+      document.getElementById('size').removeEventListener('click', onClick, false)
+    }
+  })
+
+
+  return (
+    <div>
+      <button
+        type='button'
+        onClick={() => { setCount(count + 1) }}
+      >
+        Click({count})
+        </button>
+      {count & 1 == 1 ?
+        <span id='size'>size:{size.width}x{size.height}</span>
+        : <p id='size'>size:{size.width}x{size.height}</p>
+      }
+    </div>
+  )
 }
 
 function App (props) {
@@ -40,4 +77,4 @@ function App (props) {
   )
 }
 
-export default App; 
+export default App2; 
