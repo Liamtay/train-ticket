@@ -1,40 +1,43 @@
-import React, { Component, lazy, Suspense } from 'react';
+import React, { Component, PureComponent, memo } from 'react';
 import './App.css';
 
-const About = lazy(() => import(/*webpackChunkName:"about22"*/'./About.jsx'));
+const Foo = memo(function Foo (props) {
+  console.log('Foo render');
+  return (
+    <div>{props.person.age}</div>
+  )
+})
 
 class App extends Component {
-
-  state = { hasError: false };
-
-
-  static getDerivedStateFromError (error) {
-    // 更新 state 使下一次渲染能够显示降级后的 UI
-    console.log('触发1')
-
-    return { hasError: true };
+  state = {
+    count: 1,
+    person: {
+      age: 1
+    }
   }
 
-  componentDidCatch (error, info) {
-    // 你同样可以将错误日志上报给服务器
-    //  console.log(error, info)
-    //logErrorToMyService(error, info);
-  }
+  callback = () => { }
 
   render () {
-    if (this.state.hasError) {
-
-      return <div>error</div>;
-
-    }
-
+    const { person } = this.state;
     return (
       <div>
-        <Suspense fallback={<div>loading</div>}>
-          <About></About>
-        </Suspense>
+        <button
+          onClick={() => {
+            person.age++
+            this.setState({
+              person
+            })
+          }}
+        >
+          add
+        </button>
+        <Foo
+          person={person}
+          cb={this.callback}
+        />
       </div>
-    );
+    )
   }
 }
 
