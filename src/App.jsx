@@ -1,40 +1,35 @@
-import React, { Component, createContext } from 'react';
+import React, { Component, lazy, Suspense } from 'react';
 import './App.css';
 
-const BatteryContext = createContext();
-
-class Leaf extends Component {
-  static contextType = BatteryContext;
-
-  render () {
-    const battery = this.context;
-    return (
-      <h1>Battery:{battery} </h1>
-    )
-  }
-}
-
-class Middle extends Component {
-  render () {
-    return <Leaf />;
-  }
-}
+const About = lazy(() => import(/*webpackChunkName:"about22"*/'./About.jsx'));
 
 class App extends Component {
-  state = {
-    battery: 60
+
+  state = { hasError: false };
+  static getDerivedStateFromError (error) {
+    // 更新 state 使下一次渲染能够显示降级后的 UI
+    return { hasError: true };
   }
+
+  componentDidCatch (error, info) {
+    // 你同样可以将错误日志上报给服务器
+    //logErrorToMyService(error, info);
+    this.setState({
+      hasError: true
+    })
+  }
+
   render () {
-    const { battery, } = this.state;
+    if (this.state.hasError) {
+      return <div>error</div>;
+    }
+
     return (
-      <BatteryContext.Provider value={battery}>
-        <button
-          type="button"
-          onClick={() => this.setState({ battery: battery - 1 })}>
-          Press
-          </button>
-        <Middle />
-      </BatteryContext.Provider>
+      <div>
+        <Suspense fallback={<div>loading</div>}>
+          <About></About>
+        </Suspense>
+      </div>
     );
   }
 }
