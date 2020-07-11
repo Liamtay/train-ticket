@@ -1,37 +1,71 @@
-import React, { Component, lazy, Suspense } from 'react';
+import React, { Component, PureComponent, useState, useMemo, memo, useCallback, useEffect, useRef } from 'react';
 import './App.css';
 
-const About = lazy(() => import(/*webpackChunkName:"about22"*/'./About.jsx'));
+function useCounter (defaultCount) {
+  const size = useSize();
+  return (<div>{defaultCount},Size:{size.width}x{size.height}</div>)
+}
 
-class App extends Component {
+function useCount (defaultCount) {
+  const [count, setCount] = useState(defaultCount);
+  const it = useRef();
 
-  state = { hasError: false };
-  static getDerivedStateFromError (error) {
-    // 更新 state 使下一次渲染能够显示降级后的 UI
-    return { hasError: true };
-  }
+  useEffect(() => {
+    it.current = setInterval(() => {
+      setCount(count => count + 1)
+    }, 1000)
+  }, [])
 
-  componentDidCatch (error, info) {
-    // 你同样可以将错误日志上报给服务器
-    //logErrorToMyService(error, info);
-    this.setState({
-      hasError: true
+  useEffect(() => {
+    if (count >= 10) {
+      clearInterval(it.current);
+    }
+  })
+
+  return [count, setCount]
+}
+
+function useSize () {
+  const [size, setSize] = useState({
+    width: document.documentElement.clientWidth,
+    height: document.documentElement.clientHeight
+  })
+
+  const onResize = () => {
+    setSize({
+      width: document.documentElement.clientWidth,
+      height: document.documentElement.clientHeight
     })
   }
 
-  render () {
-    if (this.state.hasError) {
-      return <div>error</div>;
-    }
+  useEffect(() => {
+    window.addEventListener('resize', onResize, false);
 
-    return (
-      <div>
-        <Suspense fallback={<div>loading</div>}>
-          <About></About>
-        </Suspense>
-      </div>
-    );
-  }
+    return () => {
+      window.removeEventListener('resize', onResize, false);
+    }
+  }, [])
+
+  return size
+}
+
+function App (props) {
+
+  const [count, setCount] = useCount(0);
+  const Counter = useCounter(count);
+  const size = useSize();
+
+  return (
+    <div>
+      <button
+        type='button'
+        onClick={() => { setCount(count + 1) }}
+      >
+        Click({count}),Size:{size.width}x{size.height}
+      </button>
+      {Counter}
+    </div>
+  )
 }
 
 export default App; 
