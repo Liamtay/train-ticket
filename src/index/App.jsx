@@ -13,7 +13,9 @@ import Journey from './Journey.jsx';
 import Submit from './Submit.jsx';
 
 import CitySelector from '../common/CitySelector.jsx';
+import DateSelector from '../common/DateSelector.jsx';
 
+import { h0 } from '../common/fp';
 
 import {
     exchangeFromTo,
@@ -26,17 +28,6 @@ import {
     setDepartDate,
     toggleHighSpeed,
 } from './actions';
-
-function h0 (timestamp = Date.now()) {
-    const target = new Date(timestamp);
-
-    target.setHours(0);
-    target.setMinutes(0);
-    target.setSeconds(0);
-    target.setMilliseconds(0);
-
-    return target.getTime();
-}
 
 function App (props) {
 
@@ -71,6 +62,31 @@ function App (props) {
         }, dispatch);
     }, []);
 
+    const departDateCbs = useMemo(() => {
+        return bindActionCreators({
+            onClick: showDateSelector,
+        }, dispatch);
+    }, []);
+
+    const dateSelectorCbs = useMemo(() => {
+        return bindActionCreators({
+            onBack: hideDateSelector,
+        }, dispatch);
+    }, []);
+
+    const onSelectDate = useCallback((day) => {
+        if (!day) {
+            return;
+        }
+
+        if (day < h0()) {
+            return;
+        }
+
+        dispatch(setDepartDate(day));
+        dispatch(hideDateSelector())
+    }, []);
+
     return (
         <div>
             <div className="header-wrapper">
@@ -81,7 +97,10 @@ function App (props) {
                 to={to}
                 {...cbs}
             />
-            <DepartDate />
+            <DepartDate
+                time={departDate}
+                {...departDateCbs}
+            />
             <HighSpeed />
             <Submit />
             <CitySelector
@@ -89,6 +108,11 @@ function App (props) {
                 cityData={cityData}
                 isLoading={isLoadingCityData}
                 {...citySelectorCbs}
+            />
+            <DateSelector
+                show={isDateSelectorVisible}
+                {...dateSelectorCbs}
+                onSelect={onSelectDate}
             />
         </div>
     )
