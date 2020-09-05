@@ -74,6 +74,12 @@ function App (props) {
         }, dispatch);
     }, []);
 
+    const highSpeedCbs = useMemo(() => {
+        return bindActionCreators({
+            toggle: toggleHighSpeed,
+        }, dispatch);
+    }, []);
+
     const onSelectDate = useCallback((day) => {
         if (!day) {
             return;
@@ -92,17 +98,22 @@ function App (props) {
             <div className="header-wrapper">
                 <Header title="火车票" onBack={onBack} />
             </div>
-            <Journey
-                from={from}
-                to={to}
-                {...cbs}
-            />
-            <DepartDate
-                time={departDate}
-                {...departDateCbs}
-            />
-            <HighSpeed />
-            <Submit />
+            <form action="./query.html" className="form">
+                <Journey
+                    from={from}
+                    to={to}
+                    {...cbs}
+                />
+                <DepartDate
+                    time={departDate}
+                    {...departDateCbs}
+                />
+                <HighSpeed
+                    highSpeed={highSpeed}
+                    {...highSpeedCbs}
+                />
+                <Submit />
+            </form>
             <CitySelector
                 show={isCitySelectorVisible}
                 cityData={cityData}
